@@ -26,6 +26,11 @@ import com.example.demo.entities.LivroEntity;
 import com.example.demo.services.AutorService;
 import com.example.demo.services.LivroService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Livros")
 @RestController
 @RequestMapping("/api/livros")
 @CrossOrigin(origins = "*")
@@ -40,9 +45,10 @@ public class LivroController {
 	@Autowired
 	private LivroConvert livroConvert;
 
+	@Operation( summary = "Cria livro", description = "Cadastra novo livro")
 	@PostMapping
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public LivroOutput criaLivro(@Valid @RequestBody LivroInput livro) {
+	public LivroOutput criaLivro(@Valid @RequestBody @Parameter(description= "Representação de um livro") LivroInput livro) {
 		LivroEntity livroEntity = livroConvert.inputToEntity(livro);
 
 		convertAutores(livro, livroEntity);
@@ -51,8 +57,9 @@ public class LivroController {
 		return livroConvert.entityToOutput(livroCriado);
 	}
 
+	@Operation( summary = "Altera livro")
 	@PutMapping("/{id}")
-	public LivroOutput alteraLivro(@PathVariable Long id, @Valid @RequestBody LivroInput livroInput) {
+	public LivroOutput alteraLivro(@Parameter(description = "Id do Livro", example ="1") @PathVariable Long id, @Valid @RequestBody LivroInput livroInput) {
 		LivroEntity livroEntity = livroService.buscaPeloId(id);
 		livroConvert.copyDataInputToEntity(livroInput, livroEntity);
 
@@ -62,25 +69,29 @@ public class LivroController {
 		return livroConvert.entityToOutput(livroAlterado);
 	}
 
+	@Operation( summary = "Busca livro pelo ID")
 	@GetMapping("/{id}")
-	public LivroOutput buscaLivroPorId(@PathVariable Long id) {
+	public LivroOutput buscaLivroPorId(@Parameter(description = "Id do Livro", example ="1") @PathVariable Long id) {
 		LivroEntity livroEntity = livroService.buscaPeloId(id);
 		return livroConvert.entityToOutput(livroEntity);
 	}
 
+	@Operation( summary = "Lista todos os livros")
 	@GetMapping
 	public List<LivroOutput> listaLivros() {
 		List<LivroEntity> listaTodos = livroService.listaTodos();
 		return livroConvert.entityToOutput(listaTodos);
 	}
 
+	@Operation( summary = "Deleta livro")
 	@DeleteMapping("/{id}")
 	@ResponseStatus(code = HttpStatus.NO_CONTENT)
-	public void removeLivro(@PathVariable Long id) {
+	public void removeLivro( @Parameter(description = "Id do Livro", example ="1") @PathVariable Long id) {
 		LivroEntity livroEntity = livroService.buscaPeloId(id);
 		livroService.remover(livroEntity);
 	}
 
+	@Operation( summary = "Converte autores")
 	private void convertAutores(LivroInput livro, LivroEntity livroEntity) {
 		List<AutorEntity> autores = new ArrayList<>();
 		for (Long autorId : livro.getAutoresIds()) {
